@@ -4,14 +4,50 @@ get_layers() {
     local repo=$1
     local digest=$2
 
-    digestOutput=$(curl -H "Authorization: Bearer $(get_token $repo)" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://index.docker.io/v2/${repo}/manifests/${digest}" 2>/dev/null)
+    # If the repo is GHCR
+    if [[ $repo == ghcr.io/* ]]; then
+        local clean_repo=${repo#"ghcr.io/"}
+        local manifestURL="https://ghcr.io/v2/${clean_repo}/manifests/${digest}"
+    else
+        local manifestURL="https://index.docker.io/v2/${repo}/manifests/${digest}"
+    fi
+
+    digestOutput=$(curl -s \
+        -H "Authorization: Bearer $(get_token $repo)" \
+        -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+        $manifestURL
+        2>/dev/null \
+    )
 
     jq -r '[.layers[].digest]' <<<"$digestOutput"
 }
 
 get_token() {
     local repo=$1
-    echo $(curl 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:'${repo}':pull' 2>/dev/null | jq -r '.token')
+
+    # If the repo is GHCR
+    if [[ $repo == ghcr.io/* ]]; then
+
+        # Make sure PAT is set
+        if [[ ${ghcr_user:-none} == "none" || ${ghcr_token:-none} == "none" ]]; then
+            >&2 echo "ERROR: GHCR User or Token Unset!"
+            exit -1
+        fi
+
+        # Get temp token with read access to repo
+        echo $(curl -s \
+            -u $ghcr_user:$ghcr_token \
+            'https://ghcr.io/token?scope="repository:'${repo}':pull"' \
+            2>/dev/null | jq -r '.token' \
+        )
+
+    # Else, assume Docker
+    else
+        echo $(curl -s \
+            'https://auth.docker.io/token?service=registry.docker.io&scope=repository:'${repo}':pull' \
+            2>/dev/null | jq -r '.token' \
+        )
+    fi
 }
 
 IFS=: read base base_tag <<<$base
