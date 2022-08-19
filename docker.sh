@@ -12,6 +12,7 @@ get_layers() {
         local manifestURL="https://index.docker.io/v2/${repo}/manifests/${digest}"
     fi
 
+    # get initial manifest
     digestOutput=$(curl -s \
         -H "Authorization: Bearer $(get_token $repo)" \
         -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
@@ -19,7 +20,25 @@ get_layers() {
         2>/dev/null \
     )
 
+    # if this tag has multiple archs, handle properly
+    if [[ $(echo $digestOutput | jq -r '.manifests != null') == "true" ]]; then
+
+        # extract the digest for amd64
+        local sha=$(cat text | jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest')
+        local manifestURL=${manifestURL/'manifests/'$digest/'manifests/'$sha}
+
+        # get new information
+        digestOutput=$(curl -s \
+            -H "Authorization: Bearer $(get_token $repo)" \
+            -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            $manifestURL
+            2>/dev/null \
+        )
+    fi
+
+    # get layers from digest
     jq -r '[.layers[].digest]' <<<"$digestOutput"
+
 }
 
 get_token() {
