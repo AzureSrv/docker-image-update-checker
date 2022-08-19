@@ -24,7 +24,7 @@ get_layers() {
     if [[ $(echo $digestOutput | jq -r '.manifests != null') == "true" ]]; then
 
         # extract the digest for amd64
-        local sha=$(cat text | jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest')
+        local sha=$(echo $digestOutput | jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest')
         local manifestURL=${manifestURL/'manifests/'$digest/'manifests/'$sha}
 
         # get new information
