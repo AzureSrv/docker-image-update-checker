@@ -3,37 +3,26 @@ description: "GitHub Action to check if the base Docker image that your image is
 author: Luca Comellini <lucacome>
 
 inputs:
-  gh-user:
+  ghcr_user:
     description: "GitHub Username"
     required: false
-  gh-token:
+  ghcr_token:
     description: "GitHub Personal Access Token"
     required: false
-  base-image:
-    description: "Docker base image"
+  target:
+    description: "Docker Base Image"
     required: true
-  image:
-    description: "Docker image"
+  upstream:
+    description: "Docker Image"
     required: true
 outputs:
   needs-updating:
     description: "True or false"
-    value: ${{ steps.run-script.outputs.result }}
 runs:
-  using: "composite"
+  using: "docker"
   steps:
     - name: Compare Versions
-      id: run-script
-      run: |
-        result=$( \
-          ghcr_user=${{ inputs.gh-user }} \
-          ghcr_token=${{ inputs.gh-token }} \
-          base=${{ inputs.base-image }} \
-          image=${{ inputs.image }} \
-          ${{ github.action_path }}/docker.sh \
-        )
-        echo "::set-output name=result::${result}"
-      shell: bash
+      image: Dockerfile
 
 branding:
   icon: anchor
