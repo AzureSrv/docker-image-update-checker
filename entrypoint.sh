@@ -98,7 +98,7 @@ echo ""
 
 # make sure targets are defined
 if [[ ${upstream:-none} == "none" || ${target:-none} == "none" ]]; then
-    echo "::error Upstream target or target target not defined! Exiting..."
+    echo "::error Upstream or Target not defined! Exiting..."
     exit -1
 fi
 
