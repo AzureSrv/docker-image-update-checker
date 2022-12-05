@@ -19,11 +19,9 @@ outputs:
   needs-updating:
     description: "True or false"
 runs:
-  using: "docker"
-  steps:
-    - name: Compare Versions
-      image: Dockerfile
-
+  using: 'docker'
+  image: 'Dockerfile'
+      
 branding:
   icon: anchor
   color: blue
