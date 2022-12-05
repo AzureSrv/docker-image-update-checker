@@ -41,10 +41,10 @@ jobs:
       -
         name: Check if update available
         id: check
-        uses: azuresrv/docker-image-update-checker@main
+        uses: azuresrv/docker-image-update-checker@v2
         with:
-          base-image: library/nginx:1.21.0
-          image: user/app:latest
+          upstream: library/nginx:1.21.0
+          target: user/app:latest
       -
         name: Build and push
         uses: docker/build-push-action@v2
