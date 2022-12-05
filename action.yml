@@ -21,6 +21,11 @@ outputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    ghcr_user: ${{ inputs.ghcr_user }}
+    ghcr_token: ${{ inputs.ghcr_token }}
+    target: ${{ inputs.target }}
+    upstream: ${{ inputs.upstream }}
       
 branding:
   icon: anchor
