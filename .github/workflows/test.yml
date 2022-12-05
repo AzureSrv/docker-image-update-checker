@@ -6,18 +6,95 @@ jobs:
   test:
     name: Test-Action
     runs-on: ubuntu-20.04
-    continue-on-error: true
     steps:
+
       - name: Checkout Repository
-        uses: actions/checkout@v2
-      - name: Test Action
-        id: test
+        uses: actions/checkout@v3
+
+      # Test 1 - Docker Hub, Needs Updating 
+
+      - name: Test 1 - Docker Hub, Needs Updating 
+        id: test1
         uses: ./
         with:
-          base-image: library/nginx:1.21.0
-          image: nginx/nginx-ingress:1.12.0
-      - name: Get Test Output
-        run: echo "Workflow Docker Image ${{ steps.test.outputs.needs-updating }}"
-      - name: Check value
-        run: echo "Needs updating"
-        if: steps.test.outputs.needs-updating == 'true'
+          upstream: nginx:1.21.1
+          target: nginx:1.21.0
+          
+      - name: Error - Test 1
+        run: |
+          echo "ERROR: 'Docker Hub, Needs Updating' failed!"
+          echo "Output was '${{ steps.test1.outputs.needs-updating }}'!"
+          echo "Should be 'true'!"
+          exit 1
+        if: steps.test1.outputs.needs-updating != 'true'
+
+      # Test 2 - Docker Hub, Identical Images
+
+      - name: Test 2 - Docker Hub, Identical Images
+        id: test2
+        uses: ./
+        with:
+          upstream: nginx:1.21.0
+          target: library/nginx:1.21.0 # <- note the optional user def. here
+          
+      - name: Error - Test 2
+        run: |
+          echo "ERROR: 'Docker Hub, Identical Images' failed!"
+          echo "Output was '${{ steps.test2.outputs.needs-updating }}'!"
+          echo "Should be 'false'!"
+          exit 1
+        if: steps.test2.outputs.needs-updating != 'false'
+      
+      # Test 3 - Github Container Repo, No Vars
+      
+      - name: Test 3 - Github Container Repo, Identical Images
+        id: test3
+        uses: ./
+        continue-on-error: true
+        with:
+          upstream: ghcr.io/azuresrv/posts-ghost:20221019
+          target: ghcr.io/azuresrv/posts-ghost:20221019
+          
+      - name: Error - Test 3
+        run: |
+          echo "ERROR: 'Github Container Repo, No Vars' succeded, but should have failed!"
+          exit 1
+        if: steps.test3.outputs.conclusion == 'success'
+
+      # Test 4 - Github Container Repo, Needs Updating
+      
+      - name: Test 4 - Github Container Repo, Needs Updating
+        id: test4
+        uses: ./
+        with:
+          ghcr_user: ${{ secrets.GH_USERNAME }}
+          ghcr_token: ${{ secrets.GH_TOKEN }}
+          upstream: ghcr.io/azuresrv/posts-ghost:20221019
+          target: ghcr.io/azuresrv/posts-ghost:20221015
+          
+      - name: Error - Test 4
+        run: |
+          echo "ERROR: 'Github Container Repo, Needs Updating' failed!"
+          echo "Output was '${{ steps.test4.outputs.needs-updating }}'!"
+          echo "Should be 'true'!"
+          exit 1
+        if: steps.test4.outputs.needs-updating != 'true'
+
+      # Test 5 - Github Container Repo, Identical Images
+      
+      - name: Test 5 - Github Container Repo, Identical Images
+        id: test5
+        uses: ./
+        with:
+          ghcr_user: ${{ secrets.GH_USERNAME }}
+          ghcr_token: ${{ secrets.GH_TOKEN }}
+          upstream: ghcr.io/azuresrv/posts-ghost:20221019
+          target: ghcr.io/azuresrv/posts-ghost:20221019
+          
+      - name: Error - Test 5
+        run: |
+          echo "ERROR: 'Github Container Repo, Identical Images' failed!"
+          echo "Output was '${{ steps.test5.outputs.needs-updating }}'!"
+          echo "Should be 'false'!"
+          exit 1
+        if: steps.test5.outputs.needs-updating != 'false'

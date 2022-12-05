@@ -3,25 +3,23 @@
 [![Test](https://github.com/lucacome/docker-image-update-checker/actions/workflows/test.yml/badge.svg)](https://github.com/azuresrv/docker-image-update-checker/actions/workflows/test.yml)
 [![GitHub license badge](https://badgen.net/github/license/lucacome/docker-image-update-checker)](https://github.com/azuresrv/docker-image-update-checker/blob/main/LICENSE)
 
-Action to check if the base image was updated and your image (published on DockerHub) needs to be rebuilt. This action will use Docker's API to compare the base layers of your image with the `base-image`, without the need to pull the images.
+Action to check if an image's base layers differ from its upstream's. (i.e. Detects an update to the upstream.) This action will use GHCR/Docker's API to compare the base layers of your image with the `upstream`, without the need to pull the images.
 
 
 ## Inputs
 
-| Name                | Type     | Description                            |
-|---------------------|----------|----------------------------------------|
-| `base-image`        | String   | Base Docker Image                      |
-| `image`             | String   | Your image based on `base-image`       |
-| `gh-user`           | String   | Your GitHub Username                   |
-| `gh-token`          | String   | A PAT with the `read:packages` scope   |
-
-Note: the `base-image` needs to have the full path. For example for official images like `nginx`, the full path is `library/nginx`.
+| Name                | Type     | Description                                   |
+|---------------------|----------|-----------------------------------------------|
+| `upstream`          | String   | Base Docker Image                             |
+| `target`            | String   | Your image based on `upstream`                |
+| `ghcr_user`         | String   | Your GitHub Username                          |
+| `ghcr_token`        | String   | A GitHub PAT with the `read:packages` scope   |
 
 ## Output
 
-| Name            | Type    | Description                                               |
-|-----------------|---------|-----------------------------------------------------------|
-| `needs-updating`| String  | 'true' or 'false' if the image needs to be updated or not |
+| Name             | Type    | Description                                                |
+|------------------|---------|------------------------------------------------------------|
+| `needs-updating` | String  | 'true' or 'false', if the image needs to be updated or not |
 
 
 ## Example
